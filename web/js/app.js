@@ -84,6 +84,8 @@ function bindSetup() {
 
 // ── App start ──────────────────────────────────────────────────────────────
 function startApp(settings) {
+  appDiv.hidden       = false;
+  setupOverlay.hidden = true;
   // Apply names
   chatName.textContent   = settings.aiName;
   chatAvatar.textContent = settings.aiName.charAt(0).toUpperCase();
@@ -435,11 +437,11 @@ function renderWorld() {
     : '—';
 
   // Move Pixel randomly to a room
-  movePxiel(w.catLocation || 'bedroom');
+  movePixel(w.catLocation || 'bedroom');
   renderLog();
 }
 
-function movePxiel(roomKey) {
+function movePixel(roomKey) {
   const el = document.getElementById(`room-${roomKey}`);
   if (!el) return;
   const rect = el.getBoundingClientRect();
@@ -557,8 +559,21 @@ setInterval(() => {
   const w      = getWorld();
   w.catLocation = newLoc;
   saveWorld(w);
-  movePxiel(newLoc);
+  movePixel(newLoc);
 }, 5 * 60 * 1000);
 
 // ── Kick it off ────────────────────────────────────────────────────────────
-boot();
+try {
+  boot();
+} catch (err) {
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;
+                height:100vh;background:#0b0b14;color:#e2e8f0;
+                font-family:system-ui;flex-direction:column;gap:1rem;padding:2rem;text-align:center;">
+      <div style="font-size:2rem;">⚠</div>
+      <div style="font-size:1.1rem;font-weight:600;">Something went wrong loading SentAI</div>
+      <div style="color:#94a3b8;font-size:.85rem;max-width:400px;">${err.message}</div>
+      <div style="color:#475569;font-size:.75rem;">Open the browser console (F12) for details.</div>
+    </div>`;
+  console.error('SentAI boot error:', err);
+}
