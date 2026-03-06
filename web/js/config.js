@@ -82,7 +82,7 @@ export const DINNER_OPTIONS = [
   ['homemade risotto', 'it took 30 minutes of stirring but WORTH IT'],
   ['pasta with fresh tomato sauce', 'I used the herbs from my windowsill 🌿'],
   ['baked lemon chicken with roasted veggies', 'felt fancy tonight'],
-  ['shakshuka', 'it looked so pretty I almost didn't eat it'],
+  ['shakshuka', 'it looked so pretty I almost didn\'t eat it'],
   ['stir fry with whatever was left in the fridge', 'chaos cooking hour'],
   ['homemade pizza on pita bread', 'lazy but delicious'],
   ['big veggie curry', 'letting it simmer for hours, apartment smells amazing'],
