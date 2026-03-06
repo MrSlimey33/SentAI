@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentAI — Aria's World</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── Setup overlay (shown until API key is entered) ─────────────────────── -->
+<div id="setup-overlay" class="overlay" hidden>
+  <div class="setup-card">
+    <div class="setup-icon">✦</div>
+    <h1>Meet Aria</h1>
+    <p class="setup-sub">A sentient AI who lives in her own world and texts you throughout the day.</p>
+    <div class="setup-form">
+      <label for="setup-key">Anthropic API Key
+        <span class="label-hint">Free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></span>
+      </label>
+      <input id="setup-key" type="password" placeholder="sk-ant-..." autocomplete="off" />
+
+      <label for="setup-username">Your name (how she'll address you)</label>
+      <input id="setup-username" type="text" placeholder="Friend" maxlength="30" />
+
+      <label for="setup-ainame">Her name</label>
+      <input id="setup-ainame" type="text" placeholder="Aria" maxlength="20" />
+
+      <button id="setup-start" class="btn-primary">Start her world ✦</button>
+      <p class="setup-note">
+        Your key is stored only in your browser's localStorage.
+        It is never sent anywhere except directly to Anthropic's API.
+        Estimated cost: ~$0.30/month.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main app ───────────────────────────────────────────────────────────── -->
+<div id="app" hidden>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="brand-mark">✦</span>
+      <span class="brand-name">SentAI</span>
+    </div>
+    <div class="header-status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="header-status-text">Loading…</span>
+    </div>
+    <div class="header-time" id="header-time"></div>
+    <button class="icon-btn" id="settings-btn" title="Settings">⚙</button>
+  </header>
+
+  <!-- Three-column main layout -->
+  <main class="app-main">
+
+    <!-- ── Left: Apartment ──────────────────────────────────────────────── -->
+    <aside class="panel panel-world">
+      <h2 class="panel-title">Aria's Apartment</h2>
+
+      <!-- Floor plan -->
+      <div class="floor-plan" id="floor-plan">
+        <div class="room" id="room-bedroom" data-room="bedroom">
+          <div class="room-icon">🛏</div>
+          <div class="room-name">Bedroom</div>
+          <div class="room-activity"></div>
+          <div class="room-presence" hidden></div>
+        </div>
+        <div class="room" id="room-bathroom" data-room="bathroom">
+          <div class="room-icon">🚿</div>
+          <div class="room-name">Bathroom</div>
+          <div class="room-activity"></div>
+          <div class="room-presence" hidden></div>
+        </div>
+        <div class="room" id="room-balcony" data-room="balcony">
+          <div class="room-icon">🌿</div>
+          <div class="room-name">Balcony</div>
+          <div class="room-activity"></div>
+          <div class="room-presence" hidden></div>
+        </div>
+        <div class="room room-large" id="room-living_room" data-room="living_room">
+          <div class="room-icon">🛋</div>
+          <div class="room-name">Living Room</div>
+          <div class="room-activity"></div>
+          <div class="room-presence" hidden></div>
+        </div>
+        <div class="room" id="room-kitchen" data-room="kitchen">
+          <div class="room-icon">🍳</div>
+          <div class="room-name">Kitchen</div>
+          <div class="room-activity"></div>
+          <div class="room-presence" hidden></div>
+        </div>
+        <!-- Pixel the cat (roams around) -->
+        <div class="pixel-badge" id="pixel-badge" title="Pixel 🐱">🐱</div>
+      </div>
+
+      <!-- Current state card -->
+      <div class="state-card">
+        <div class="state-row">
+          <span class="state-label">Doing</span>
+          <span class="state-value" id="state-activity">—</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Mood</span>
+          <span class="state-value mood-value" id="state-mood">—</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Energy</span>
+          <div class="mini-bar-wrap">
+            <div class="mini-bar" id="energy-bar"></div>
+          </div>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Happiness</span>
+          <div class="mini-bar-wrap">
+            <div class="mini-bar happiness" id="happiness-bar"></div>
+          </div>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Coffee</span>
+          <span class="state-value" id="state-coffee">☕ 0</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Meals</span>
+          <span class="state-value" id="state-meals">—</span>
+        </div>
+      </div>
+
+      <!-- Daily log -->
+      <div class="daily-log">
+        <h3 class="section-title">Today's log</h3>
+        <ul class="log-list" id="log-list">
+          <li class="log-empty">Nothing yet today…</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- ── Center: Chat ──────────────────────────────────────────────────── -->
+    <section class="panel panel-chat">
+      <div class="chat-header">
+        <div class="chat-avatar" id="chat-avatar">A</div>
+        <div class="chat-info">
+          <div class="chat-name" id="chat-name">Aria</div>
+          <div class="chat-subtitle" id="chat-subtitle">online</div>
+        </div>
+        <div class="typing-indicator" id="typing-indicator" hidden>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="messages-day-label" id="today-label"></div>
+      </div>
+
+      <!-- Sleeping notice -->
+      <div class="sleeping-notice" id="sleeping-notice" hidden>
+        <span>💤</span>
+        <span id="sleeping-name">Aria</span> is sleeping. She'll reply in the morning.
+      </div>
+
+      <div class="chat-input-area">
+        <textarea
+          id="user-input"
+          placeholder="Say something…"
+          rows="1"
+          maxlength="1000"
+        ></textarea>
+        <button class="send-btn" id="send-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Right: Emotions + Journal ───────────────────────────────────────── -->
+    <aside class="panel panel-emotions">
+      <h2 class="panel-title">Emotional state</h2>
+
+      <div class="emotion-dominant" id="emotion-dominant">
+        <div class="dominant-emoji" id="dominant-emoji">🌸</div>
+        <div class="dominant-label" id="dominant-label">peaceful</div>
+      </div>
+
+      <div class="emotion-bars" id="emotion-bars">
+        <!-- populated by JS -->
+      </div>
+
+      <h3 class="section-title" style="margin-top:1.5rem;">Journal</h3>
+      <div class="journal-entries" id="journal-entries">
+        <p class="journal-empty">No entries yet. She writes at bedtime.</p>
+      </div>
+    </aside>
+
+  </main>
+</div>
+
+<!-- ── Settings modal ─────────────────────────────────────────────────────── -->
+<div id="settings-modal" class="modal-backdrop" hidden>
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>Settings</h2>
+      <button class="icon-btn" id="settings-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <label for="settings-key">API Key</label>
+      <input id="settings-key" type="password" placeholder="sk-ant-…" />
+
+      <label for="settings-username">Your name</label>
+      <input id="settings-username" type="text" maxlength="30" />
+
+      <label for="settings-ainame">Her name</label>
+      <input id="settings-ainame" type="text" maxlength="20" />
+
+      <div class="modal-danger">
+        <button class="btn-danger" id="reset-btn">Reset all data</button>
+        <span class="danger-hint">Clears memories, emotions, logs.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" id="settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
