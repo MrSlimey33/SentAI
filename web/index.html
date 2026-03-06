@@ -11,8 +11,22 @@
 </head>
 <body>
 
+<!-- Runs synchronously before any module loads.
+     Shows the correct panel immediately — guarantees page is never blank
+     even if the ES modules fail to load. -->
+<script>
+  (function () {
+    try {
+      var s = JSON.parse(localStorage.getItem('sentai_settings') || '{}');
+      if (s && s.apiKey) {
+        document.write('<style>#app{display:flex!important}#setup-overlay{display:none!important}</style>');
+      }
+    } catch (e) {}
+  })();
+</script>
+
 <!-- ── Setup overlay (shown until API key is entered) ─────────────────────── -->
-<div id="setup-overlay" class="overlay" hidden>
+<div id="setup-overlay" class="overlay">
   <div class="setup-card">
     <div class="setup-icon">✦</div>
     <h1>Meet Aria</h1>
