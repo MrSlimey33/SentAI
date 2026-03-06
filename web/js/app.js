@@ -18,10 +18,6 @@ import {
 const $ = id => document.getElementById(id);
 const setupOverlay   = $('setup-overlay');
 const appDiv         = $('app');
-const setupKey       = $('setup-key');
-const setupUsername  = $('setup-username');
-const setupAiname    = $('setup-ainame');
-const setupStart     = $('setup-start');
 const headerStatus   = $('header-status-text');
 const headerTime     = $('header-time');
 const statusDot      = $('status-dot');
@@ -57,29 +53,14 @@ const settingsSave   = $('settings-save');
 const resetBtn       = $('reset-btn');
 
 // ── Boot ────────────────────────────────────────────────────────────────────
+// Setup form is handled by the plain <script> in index.html (no module needed).
+// Here we only need to start the app when a key already exists.
 function boot() {
   const settings = getSettings();
-  if (!settings.apiKey) {
-    setupOverlay.hidden = false;
-    appDiv.hidden = true;
-    bindSetup();
-  } else {
+  if (settings.apiKey) {
     startApp(settings);
   }
-}
-
-function bindSetup() {
-  setupStart.addEventListener('click', () => {
-    const key  = setupKey.value.trim();
-    const user = setupUsername.value.trim() || 'Friend';
-    const ai   = setupAiname.value.trim()   || 'Aria';
-    if (!key) { setupKey.focus(); return; }
-    saveSettings({ apiKey: key, userName: user, aiName: ai });
-    setupOverlay.hidden = true;
-    appDiv.hidden = false;
-    startApp(getSettings());
-  });
-  setupKey.addEventListener('keydown', e => { if (e.key==='Enter') setupStart.click(); });
+  // No key → setup overlay is visible by default from HTML; plain script handles it.
 }
 
 // ── App start ──────────────────────────────────────────────────────────────

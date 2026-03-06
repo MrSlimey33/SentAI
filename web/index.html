@@ -12,8 +12,7 @@
 <body>
 
 <!-- Runs synchronously before any module loads.
-     Shows the correct panel immediately — guarantees page is never blank
-     even if the ES modules fail to load. -->
+     Shows the correct panel immediately — page is never blank even if modules fail. -->
 <script>
   (function () {
     try {
@@ -244,5 +243,47 @@
 </div>
 
 <script type="module" src="js/app.js"></script>
+
+<!-- ── Plain-script setup handler — works even if ES modules fail ────────── -->
+<script>
+  (function () {
+    var keyEl  = document.getElementById('setup-key');
+    var btn    = document.getElementById('setup-start');
+
+    function doSetup() {
+      var key  = keyEl.value.trim();
+      var user = document.getElementById('setup-username').value.trim() || 'Friend';
+      var ai   = document.getElementById('setup-ainame').value.trim()   || 'Aria';
+
+      if (!key) {
+        keyEl.style.borderColor = '#f43f5e';
+        keyEl.style.boxShadow   = '0 0 0 3px #f43f5e33';
+        keyEl.focus();
+        setTimeout(function () {
+          keyEl.style.borderColor = '';
+          keyEl.style.boxShadow   = '';
+        }, 1800);
+        return;
+      }
+
+      btn.disabled      = true;
+      btn.textContent   = 'Starting…';
+
+      try {
+        localStorage.setItem('sentai_settings', JSON.stringify({
+          apiKey: key, userName: user, aiName: ai
+        }));
+      } catch (e) {}
+
+      // Reload so the ES module boot path picks up the saved key cleanly.
+      window.location.reload();
+    }
+
+    btn.addEventListener('click', doSetup);
+    keyEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doSetup();
+    });
+  })();
+</script>
 </body>
 </html>
